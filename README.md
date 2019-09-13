@@ -1,4 +1,4 @@
-# StockAnalysis
+# StockAnalysis (반드시 python 32bit에서 실행해야 함)
 Analyze Stock using python 
 
 ##### 1. getStockList : 키움 증권 사이트로부터 모든 종목에 대한 최근 200개 가격 정보를 읽어와 DB로 만든다.
