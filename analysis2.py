@@ -25,7 +25,17 @@ def loadDB_data(filename, tablename):
     return data
 
 
-class analysis():
+def analysis_greater(a, b):
+    return a > b
+
+
+def analysis_low_high(avg1, avg2, index):
+    ret = analysis_greater(avg1[index], avg2[index])
+    ret &= analysis_greater(avg2[index + 2], avg1[index + 2])
+    return ret
+
+
+class Analysis:
     def __init__(self):
         self.codename = str()
         self.data = list()
@@ -70,106 +80,107 @@ class analysis():
                 self.avg60.append(sum(data_close[i:i + 60]) // 60)
                 self.avg120.append(sum(data_close[i:i + 120]) // 120)
 
-    def analysis_greater(self, a, b):
-        return a > b
+    def cross_20_60_under120(self, start, duration):
+        if (len(self.avg120) - start) < (duration + 10):
+            return 0, 0
 
-    def analysis_low_high(self, avg1, avg2, index):
-        ret = self.analysis_greater(avg1[index], avg2[index])
-        ret &= self.analysis_greater(avg2[index + 2], avg1[index + 2])
-        return ret
-
-    def analysis1(self, count):
-        if len(self.avg120) < (count + 10):
-            return 0
-
-        for i in range(count):
-            ret = self.analysis_low_high(self.avg60, self.avg120, i)  # 60일선이 120일 선 위로 올라가는 시점
-            ret &= self.analysis_greater(self.minmax[3], self.avg5[i])  # 5일선이 max의 30% 아래일때
-            ret &= self.analysis_greater(self.avg60[i] - self.avg60[i + 2], 0)  # 60일선이 올라가는 추세
+        for i in range(start, duration + start):
+            ret = analysis_low_high(self.avg20, self.avg60, i)  # 60일선이 120일 선 위로 올라가는 시점
+            ret &= analysis_greater(self.avg20[i] - self.avg20[i + 2], 0)  # 20일선이 올라가는 추세
+            ret &= analysis_greater(self.avg120[i], self.data[i][4])  # 당시가가 60일선보다 작은 값
+            ret &= analysis_greater(self.avg120[i], self.data[start][4])  # 현재가가 60일선보다 작은 값
             if ret:
-                return i
-
-        return 0
-
-    def analysis2(self, count):
-        if len(self.avg120) < (count + 10):
-            return (0, 0)
-
-        for i in range(count):
-            ret = self.analysis_low_high(self.avg60, self.avg120, i)  # 60일선이 120일 선 위로 올라가는 시점
-            ret &= self.analysis_greater(self.minmax[5], self.avg5[i])  # 5일선이 max의 30% 아래일때
-            ret &= self.analysis_greater(self.avg60[i] - self.avg60[i + 2], 0)  # 60일선이 올라가는 추세
-            if ret:
-                if self.analysis_greater(self.minmax[1], self.avg5[i]):
+                if analysis_greater(self.minmax[1], self.avg5[i]):
                     return i, 10
-                elif self.analysis_greater(self.minmax[2], self.avg5[i]):
+                elif analysis_greater(self.minmax[2], self.avg5[i]):
                     return i, 20
-                elif self.analysis_greater(self.minmax[3], self.avg5[i]):
+                elif analysis_greater(self.minmax[3], self.avg5[i]):
                     return i, 30
-                elif self.analysis_greater(self.minmax[4], self.avg5[i]):
+                elif analysis_greater(self.minmax[4], self.avg5[i]):
                     return i, 40
-                elif self.analysis_greater(self.minmax[5], self.avg5[i]):
+                elif analysis_greater(self.minmax[5], self.avg5[i]):
                     return i, 50
 
                 return i, 60
         return 0, 0
 
-    def analysis3(self, count):
-        if len(self.avg120) < (count + 10):
-            return (0, 0)
+    def cross_60_120_avg5(self, start, duration):
+        if (len(self.avg120)-start) < (duration + 10):
+            return 0, 0
 
-        for i in range(count):
-            ret = self.analysis_low_high(self.avg60, self.avg120, i)  # 60일선이 120일 선 위로 올라가는 시점
-            ret &= self.analysis_greater(self.minmax[5], self.data[0][4])  # 현재가가 max의 50% 아래일때
-            ret &= self.analysis_greater(self.avg60[i] - self.avg60[i + 2], 0)  # 60일선이 올라가는 추세
+        for i in range(start, duration + start):
+            ret = analysis_low_high(self.avg60, self.avg120, i)  # 60일선이 120일 선 위로 올라가는 시점
+            ret &= analysis_greater(self.minmax[5], self.avg5[i])  # 5일선이 max의 30% 아래일때
+            ret &= analysis_greater(self.avg60[i] - self.avg60[i + 2], 0)  # 60일선이 올라가는 추세
             if ret:
-                if self.analysis_greater(self.minmax[1], self.data[0][4]):
+                if analysis_greater(self.minmax[1], self.avg5[i]):
                     return i, 10
-                elif self.analysis_greater(self.minmax[2], self.data[0][4]):
+                elif analysis_greater(self.minmax[2], self.avg5[i]):
                     return i, 20
-                elif self.analysis_greater(self.minmax[3], self.data[0][4]):
+                elif analysis_greater(self.minmax[3], self.avg5[i]):
                     return i, 30
-                elif self.analysis_greater(self.minmax[4], self.data[0][4]):
+                elif analysis_greater(self.minmax[4], self.avg5[i]):
                     return i, 40
-                elif self.analysis_greater(self.minmax[5], self.data[0][4]):
+                elif analysis_greater(self.minmax[5], self.avg5[i]):
+                    return i, 50
+
+                return i, 60
+        return 0, 0
+
+    def cross_60_120_last(self, start, duration):
+        if (len(self.avg120) - start) < (duration + 10):
+            return 0, 0
+
+        for i in range(start, duration + start):
+            ret = analysis_low_high(self.avg60, self.avg120, i)  # 60일선이 120일 선 위로 올라가는 시점
+            ret &= analysis_greater(self.minmax[5], self.data[start][4])  # 현재가가 max의 50% 아래일때
+            ret &= analysis_greater(self.avg60[i] - self.avg60[i + 2], 0)  # 60일선이 올라가는 추세
+            if ret:
+                if analysis_greater(self.minmax[1], self.data[start][4]):
+                    return i, 10
+                elif analysis_greater(self.minmax[2], self.data[start][4]):
+                    return i, 20
+                elif analysis_greater(self.minmax[3], self.data[start][4]):
+                    return i, 30
+                elif analysis_greater(self.minmax[4], self.data[start][4]):
+                    return i, 40
+                elif analysis_greater(self.minmax[5], self.data[start][4]):
                     return i, 50
 
                 return i, 60
         return 0, 0
 
     def analysis4(self, count):
-        if len(self.avg120) < (count + 10):
-            return 0
-
-        for i in range(count):
-            ret = self.analysis_greater(self.amount[i], self.amount[i + 1] * 2)
-            # ret &= self.analysis_greater(self.amount[i+1], self.amount[i+2]*2)
-            # ret &= self.analysis_greater(self.amount[i+2], self.amount[i+3])
-            # ret &= self.analysis_greater(self.amount[i+3], self.amount[i+4])
-            # ret &= self.analysis_greater(self.amount[i+4], self.amount[i+5])
-            if ret:
-                return i
-
         return 0
 
 
-def analysis_cross_60_120_avg5(anal_list, days):
+def analysis_cross_60_120_avg5(anal_list, start, duration):
     count = 0
     for anal in anal_list:
-        (number, per) = anal.analysis2(days)
+        (number, per) = anal.cross_60_120_avg5(start, duration)
         if number:
             count += 1
-            print(count, anal.codename, anal.data[number][0], anal.data[number][4], per, "%")  # for analysis2
+            print(count, anal.codename, anal.data[number][0], anal.data[number][4], per, "%")  # for cross_60_120_avg5
     print("---- 끝 ----")
 
 
-def analysis_cross_60_120_last(anal_list, days):
+def analysis_cross_60_120_last(anal_list, start, duration):
     count = 0
     for anal in anal_list:
-        (number, per) = anal.analysis3(days)
+        (number, per) = anal.cross_60_120_last(start, duration)
         if number:
             count += 1
-            print(count, anal.codename, anal.data[number][0], anal.data[number][4], per, "%")  # for analysis2
+            print(count, anal.codename, anal.data[number][0], anal.data[number][4], per, "%")  # for cross_60_120_avg5
+    print("---- 끝 ----")
+
+
+def analysis_cross_20_60_under120(anal_list, start, duration):
+    count = 0
+    for anal in anal_list:
+        (number, per) = anal.cross_20_60_under120(start, duration)
+        if number:
+            count += 1
+            print(count, anal.codename, anal.data[number][0], anal.data[number][4], per, "%")
     print("---- 끝 ----")
 
 
@@ -189,15 +200,15 @@ def loadDB(dbname):
     anal_list = list()
     table = loadDB_table(dbname)
     table_list = np.array(table).flatten().tolist()
-    print("Start reading DBs - %s" % dbname)
+    print("Reading '%s' : 000000" % dbname, end="")
     for code in table_list:
-        anal = analysis()
+        anal = Analysis()
         print("\b\b\b\b\b\b%s"%code, end="")
         data = loadDB_data(dbname, code)
         anal.setCodename(code)
         anal.setData(data)
         anal_list.append(anal)
-    print("\b\b\b\b\b\bfinish reading DBs")
+    print("\rFinish reading '%s' " % dbname)
     return anal_list
 
 
@@ -208,23 +219,30 @@ if __name__ == '__main__':
 
     while(1):
         select = menu()
-        if select == 0:
-            exit(1)
-        elif select == 1:
+        if select == 1:
             print("---- 분석시작 ----")
             print("<Kospi>")
-            analysis_cross_60_120_avg5(kospi_anal, 5)
+
+            analysis_cross_60_120_avg5(kospi_anal, 0, 5)
             print("<Kosdaq>")
-            analysis_cross_60_120_avg5(kosdaq_anal, 5)
+            analysis_cross_60_120_avg5(kosdaq_anal, 0, 5)
             print("<ETF>")
-            analysis_cross_60_120_avg5(etf_anal, 10)
+            analysis_cross_60_120_avg5(etf_anal, 0, 10)
         elif select == 2:
             print("---- 분석시작 ----")
             print("<Kospi>")
-            analysis_cross_60_120_last(kospi_anal, 5)
+            analysis_cross_60_120_last(kospi_anal, 0, 5)
             print("<Kosdaq>")
-            analysis_cross_60_120_last(kosdaq_anal, 5)
+            analysis_cross_60_120_last(kosdaq_anal, 0, 5)
             print("<ETF>")
-            analysis_cross_60_120_last(etf_anal, 10)
+            analysis_cross_60_120_last(etf_anal, 0, 10)
+        elif select == 3:
+            print("---- 분석시작 ----")
+            print("<Kospi>")
+            analysis_cross_20_60_under120(kospi_anal, 0, 5)
+            print("<Kosdaq>")
+            analysis_cross_20_60_under120(kosdaq_anal, 0, 5)
+            print("<ETF>")
+            analysis_cross_20_60_under120(etf_anal, 0, 10)
         else:
-            None
+            exit(1)
