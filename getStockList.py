@@ -71,15 +71,10 @@ def download_market_codelist(kiwoom, market):
         print("<%s - total num : %d>"%(m,len(code_list)))
         print(code_list)
 
-def saveAlldata(kiwoom, filename, count, dbname):
-    #app = QApplication(sys.argv)
-    #kiwoom = init_trade()
-
+def saveAlldata(kiwoom, filename, start, end, count, dbname):
     kiwoom.setLimit(count)
-
     codelist = loadStockList(filename)
-    print("시작 index : ", end="")
-    start = int(input())
+
     if (start<0 or start>len(codelist)):
         start = 0
 
@@ -88,8 +83,29 @@ def saveAlldata(kiwoom, filename, count, dbname):
         inquiry_stockdata(kiwoom, code, dbname)
         print("%4d - %s 종목 조회 결과 %s에 저장 완료되었습니다" % (i, code, dbname))
         time.sleep(1)
+        if i == end-1:
+            return
 
     print("\n-----종료-----")
+
+
+def saveAlldata_fast(kiwoom, filename, start, end, count, dbname):
+    kiwoom.setLimit(count)
+    codelist = loadStockList(filename)
+
+    if (start<0 or start>len(codelist)):
+        start = 0
+
+    for i in range(start, len(codelist)):
+        code = codelist[i]
+        inquiry_stockdata(kiwoom, code, dbname)
+        print("%4d - %s 종목 조회 결과 %s에 저장 완료되었습니다" % (i, code, dbname))
+        time.sleep(0.1)
+        if i == end-1:
+            return
+
+    print("\n-----종료-----")
+
 
 def backupDB(filename):
     print("%s를 backup하시겠습니까?(yes or no)" % filename, end="")
@@ -114,6 +130,8 @@ if __name__ == "__main__":
         if db == 2 or db == 3:
             for m in market_list[market]:
                 backupDB(market_db[m])
-                saveAlldata(kiwoom, market_lst[m], 200, market_db[m])
+                print("시작 index : ", end="")
+                start = int(input())
+                saveAlldata(kiwoom, market_lst[m], start, -1, 200, market_db[m])
 
 
