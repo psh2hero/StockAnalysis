@@ -18,6 +18,7 @@ class Kiwoom(QAxWidget):
         self.countlimit = 0
         self.lastday = str()
         self.today = str()
+        self.netprofit = 0
 
     def setLimit(self, datacount):
         self.countlimit = datacount
@@ -79,6 +80,8 @@ class Kiwoom(QAxWidget):
 
         if rqname == "opt10081_req":
             self._opt10081(rqname, trcode)
+        elif rqname == "opt10001_req":
+            self._opt10001(rqname, trcode)
 
         try:
             self.tr_event_loop.exit()
@@ -111,6 +114,10 @@ class Kiwoom(QAxWidget):
             self.ohlcv['close'].append(int(close))
             self.ohlcv['volume'].append(int(volume))
 
+    def _opt10001(self, rqname, trcode):
+        self.netprofit = self._comm_get_data(trcode, "", rqname, 0, "당기순이익")
+
+
 def inquiry_stockdata(kiwoom, stockcode, dbname):
     #app = QApplication(sys.argv)
     #kiwoom = Kiwoom(datacount)
@@ -138,6 +145,12 @@ def inquiry_stockdata(kiwoom, stockcode, dbname):
     con = sqlite3.connect(dbname)
     df.to_sql(stockcode, con, if_exists='replace')
 
+
+def inquiry_netprofit(kiwoom, stockcode):
+    kiwoom.set_input_value("종목코드", stockcode)
+    kiwoom.comm_rq_data("opt10001_req", "opt10001", 0, "0101")
+
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     kiwoom = Kiwoom()
@@ -149,8 +162,13 @@ if __name__ == "__main__":
         stockcode = input()
         if stockcode != "":
             print("종목 조회 중...")
-            inquiry_stockdata(kiwoom, stockcode, 'kospi.db')
-            print("종목 조회 결과 kospi.db에 저장 완료")
+            #inquiry_stockdata(kiwoom, stockcode, 'kospi.db')
+            #print("종목 조회 결과 kospi.db에 저장 완료")
+            inquiry_netprofit(kiwoom, stockcode)
+            kiwoom.netprofit == 0
+            while(kiwoom.netprofit == 0):
+                None
+            print("종목 조회 완료 : 단기순이익 = ", kiwoom.netprofit)
         else:
             break
 

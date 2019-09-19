@@ -2,12 +2,14 @@ from inquiry_stockdata import *
 import os
 import shutil
 
+
 def saveStockList(filename, code_list):
     print(filename + "File is written.")
     file = open(filename, 'w')
     for code in code_list:
         file.write('%s\n' % code)
     file.close()
+
 
 def loadStockList(filename):
     print(filename + " File is restored.")
@@ -26,6 +28,7 @@ def loadStockList(filename):
             break
     file.close()
     return codelist
+
 
 def menu():
     print("1. 종목 리스트")
@@ -55,11 +58,13 @@ market_dic = {"코스피": 0, "코스닥": 10, "ETF": 8}
 market_lst = {"코스피": "kospi.lst", "코스닥": "kosdaq.lst", "ETF": "ETF.lst"}
 market_db = {"코스피": "kospi.db", "코스닥": "kosdaq.db", "ETF": "ETF.db"}
 
+
 def init_trade():
     kiwoom = Kiwoom()
     kiwoom.comm_connect()
 
     return kiwoom
+
 
 def download_market_codelist(kiwoom, market):
     #app = QApplication(sys.argv)
@@ -70,6 +75,7 @@ def download_market_codelist(kiwoom, market):
         saveStockList(market_lst[m], code_list)
         print("<%s - total num : %d>"%(m,len(code_list)))
         print(code_list)
+
 
 def saveAlldata(kiwoom, filename, start, end, count, dbname):
     kiwoom.setLimit(count)
