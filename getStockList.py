@@ -93,8 +93,8 @@ def saveAlldata_fast(kiwoom, filename, start, end, count, dbname):
     kiwoom.setLimit(count)
     codelist = loadStockList(filename)
 
-    if (start<0 or start>len(codelist)):
-        start = 0
+    if start < 0 or start > len(codelist) or start > end:
+        return
 
     for i in range(start, len(codelist)):
         code = codelist[i]
