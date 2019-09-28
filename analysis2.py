@@ -96,12 +96,12 @@ class Analysis:
                     return i, 20
                 elif analysis_greater(self.minmax[3], self.avg5[i]):
                     return i, 30
-                elif analysis_greater(self.minmax[4], self.avg5[i]):
-                    return i, 40
-                elif analysis_greater(self.minmax[5], self.avg5[i]):
-                    return i, 50
-
-                return i, 60
+                # elif analysis_greater(self.minmax[4], self.avg5[i]):
+                #     return i, 40
+                # elif analysis_greater(self.minmax[5], self.avg5[i]):
+                #     return i, 50
+                #
+                # return i, 60
         return 0, 0
 
     def cross_60_120_avg5(self, start, duration):
@@ -239,9 +239,9 @@ if __name__ == '__main__':
         elif select == 3:
             print("---- 분석시작 ----")
             print("<Kospi>")
-            analysis_cross_20_60_under120(kospi_anal, 0, 5)
+            analysis_cross_20_60_under120(kospi_anal, 0, 10)
             print("<Kosdaq>")
-            analysis_cross_20_60_under120(kosdaq_anal, 0, 5)
+            analysis_cross_20_60_under120(kosdaq_anal, 0, 10)
             print("<ETF>")
             analysis_cross_20_60_under120(etf_anal, 0, 10)
         else:
