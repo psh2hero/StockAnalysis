@@ -119,12 +119,12 @@ class Analysis:
                     return i, 20
                 elif analysis_greater(self.minmax[3], self.avg5[i]):
                     return i, 30
-                elif analysis_greater(self.minmax[4], self.avg5[i]):
-                    return i, 40
-                elif analysis_greater(self.minmax[5], self.avg5[i]):
-                    return i, 50
-
-                return i, 60
+                # elif analysis_greater(self.minmax[4], self.avg5[i]):
+                #     return i, 40
+                # elif analysis_greater(self.minmax[5], self.avg5[i]):
+                #     return i, 50
+                #
+                # return i, 60
         return 0, 0
 
     def cross_60_120_last(self, start, duration):
@@ -142,23 +142,27 @@ class Analysis:
                     return i, 20
                 elif analysis_greater(self.minmax[3], self.data[start][4]):
                     return i, 30
-                elif analysis_greater(self.minmax[4], self.data[start][4]):
-                    return i, 40
-                elif analysis_greater(self.minmax[5], self.data[start][4]):
-                    return i, 50
-
-                return i, 60
+                # elif analysis_greater(self.minmax[4], self.data[start][4]):
+                #     return i, 40
+                # elif analysis_greater(self.minmax[5], self.data[start][4]):
+                #     return i, 50
+                #
+                # return i, 60
         return 0, 0
 
     def analysis4(self, count):
         return 0
 
 
+max_price = 0
+min_price = 0
+
+
 def analysis_cross_60_120_avg5(anal_list, start, duration):
     count = 0
     for anal in anal_list:
         (number, per) = anal.cross_60_120_avg5(start, duration)
-        if number:
+        if number and min_price <= anal.data[number][4] <= max_price:
             count += 1
             print(count, anal.codename, anal.data[number][0], anal.data[number][4], per, "%")  # for cross_60_120_avg5
     print("---- 끝 ----")
@@ -168,7 +172,7 @@ def analysis_cross_60_120_last(anal_list, start, duration):
     count = 0
     for anal in anal_list:
         (number, per) = anal.cross_60_120_last(start, duration)
-        if number:
+        if number and min_price <= anal.data[number][4] <= max_price:
             count += 1
             print(count, anal.codename, anal.data[number][0], anal.data[number][4], per, "%")  # for cross_60_120_avg5
     print("---- 끝 ----")
@@ -178,22 +182,44 @@ def analysis_cross_20_60_under120(anal_list, start, duration):
     count = 0
     for anal in anal_list:
         (number, per) = anal.cross_20_60_under120(start, duration)
-        if number:
+        if number and min_price <= anal.data[number][4] <= max_price:
             count += 1
             print(count, anal.codename, anal.data[number][0], anal.data[number][4], per, "%")
     print("---- 끝 ----")
 
 
 def menu():
-    print("\n1. 120일선 & 200일선 골든 크로스(당시 5일선이 50%이하 가격)")
-    print("2. 120일선 & 200일선 골든 크로스(현제가가 50%이하 가격)")
+    print("\n1. 120일선 & 200일선 골든 크로스(당시 5일선이 30%이하 가격)")
+    print("2. 120일선 & 200일선 골든 크로스(현제가가 30%이하 가격)")
     print("3. 60일선 & 120일선 골든 크로스(당시 현재가가 200일선 보다 작을 때)")
+    print("4. 주가 최대값 설정")
+    print("Exit (-1)")
     print("무엇을 하시겠습니까? : ", end="")
-    sel = int(input())
 
-    if sel < 1 or sel > 3:
-        sel = 0
-    return sel
+    try:
+        sel = int(input())
+        if -2 < sel < 5:
+            return sel
+        else:
+            return 0
+    except:
+        return 0
+
+
+def menu_price():
+    print("\n주가 금액 최대값은?")
+    try:
+        max = int(input())
+    except:
+        max = 0
+
+    print("주가 금액 최소값은?")
+    try:
+        min = int(input())
+    except:
+        min = 0
+
+    return max, min
 
 
 def loadDB(dbname):
@@ -217,7 +243,10 @@ if __name__ == '__main__':
     kosdaq_anal = loadDB('kosdaq.db')
     etf_anal = loadDB('etf.db')
 
-    while(1):
+    while 1:
+        while not max_price:
+            max_price, min_price = menu_price()
+
         select = menu()
         if select == 1:
             print("---- 분석시작 ----")
@@ -231,9 +260,9 @@ if __name__ == '__main__':
         elif select == 2:
             print("---- 분석시작 ----")
             print("<Kospi>")
-            analysis_cross_60_120_last(kospi_anal, 0, 5)
+            analysis_cross_60_120_last(kospi_anal, 0, 10)
             print("<Kosdaq>")
-            analysis_cross_60_120_last(kosdaq_anal, 0, 5)
+            analysis_cross_60_120_last(kosdaq_anal, 0, 10)
             print("<ETF>")
             analysis_cross_60_120_last(etf_anal, 0, 10)
         elif select == 3:
@@ -244,5 +273,7 @@ if __name__ == '__main__':
             analysis_cross_20_60_under120(kosdaq_anal, 0, 10)
             print("<ETF>")
             analysis_cross_20_60_under120(etf_anal, 0, 10)
-        else:
+        elif select == -1:
             exit(1)
+        elif select == 4:
+            max_price = 0
